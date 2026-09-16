@@ -6,7 +6,7 @@ from pyetatouch.catalog import ComponentType
 from pyetatouch.client import EtaClient
 from pyetatouch.discovery import Installation, discover
 from pyetatouch.models import VarAddress
-from tests.fake_heater import FakeHeater
+from tests.fake_heater import FakeHeater, Value
 from tests.helpers import private_fixture, requires_private, varinfo_xml
 
 ON_OFF = {1802: "Aus", 1803: "Ein"}
@@ -153,3 +153,21 @@ async def test_reference_heater(client: EtaClient, heater: FakeHeater) -> None:
     assert {v.key for v in installation.variables_for(hk)} == {
         v.key for v in installation.variables_for(fbh)
     }
+
+
+async def test_not_connected_values_are_dropped(client: EtaClient, heater: FakeHeater) -> None:
+    _small_heater(heater)
+    heater.values["120/10101/0/11060/0"] = Value("0", "xxx")
+    heater.values["40/10021/0/11110/0"] = Value("0", "---")
+    heater.values["120/10111/0/0/12080"] = Value("1803", "xxx", offset=1802)
+    installation = await discover(client)
+    hk = installation.component_for(VarAddress(120, 10101, 0, 0, 0))
+    fbh = installation.component_for(VarAddress(120, 10102, 0, 0, 0))
+    assert hk is not None and fbh is not None
+    assert "flow_temperature" not in {v.key for v in installation.variables_for(hk)}
+    assert "flow_temperature" in {v.key for v in installation.variables_for(fbh)}
+    keys = {v.key for v in installation.variables}
+    assert "flue_gas_temperature" in keys  # "---" only means "no value right now"
+    hot_water = installation.component_for(VarAddress(120, 10111, 0, 0, 0))
+    assert hot_water is not None
+    assert "power" in {v.key for v in installation.variables_for(hot_water)}  # text value

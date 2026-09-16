@@ -8,12 +8,29 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
-from .catalog import CATALOG, NEEDS_INFO, CatalogEntry, ComponentType, Kind, component_type
+from .catalog import (
+    CATALOG,
+    NEEDS_INFO,
+    TWO_OPTION_KINDS,
+    CatalogEntry,
+    ComponentType,
+    component_type,
+)
 from .client import EtaClient
-from .models import VarAddress, VarInfo
+from .models import VarAddress, VarInfo, VarValue
 
 _LOGGER = logging.getLogger(__name__)
 SCHEMA_VERSION = 2
+NOT_CONNECTED = "xxx"
+
+
+def _not_connected(value: VarValue) -> bool:
+    """Whether a numeric variable reports that no sensor/function is connected.
+
+    `xxx` marks unconnected inputs; `---` only means "no value right now" and is kept.
+    Text variables are kept because their strValue is unreliable.
+    """
+    return value.text_offset == 0 and value.text.strip() == NOT_CONNECTED
 
 
 @dataclass(frozen=True, slots=True)
@@ -135,11 +152,12 @@ async def discover(client: EtaClient, *, set_name: str = "pyetatouchdisc") -> In
 
     probe_addresses = [address for _, addresses in candidates for address in addresses]
     async with client.varset(set_name, probe_addresses) as probe:
-        readable = set(probe.accepted)
+        values = await probe.read_all() if probe.accepted else {}
+    usable = {address for address, value in values.items() if not _not_connected(value)}
 
     chosen: list[tuple[CatalogEntry, VarAddress]] = []
     for entry, addresses in candidates:
-        address = next((a for a in addresses if a in readable), None)
+        address = next((a for a in addresses if a in usable), None)
         if address is not None:
             chosen.append((entry, address))
 
@@ -150,7 +168,7 @@ async def discover(client: EtaClient, *, set_name: str = "pyetatouchdisc") -> In
 
     variables: list[MatchedVariable] = []
     for (entry, address), info in zip(chosen, infos, strict=True):
-        if entry.kind is Kind.SWITCH and (info is None or len(info.options) != 2):
+        if entry.kind in TWO_OPTION_KINDS and (info is None or len(info.options) != 2):
             _LOGGER.debug("Skipping %s at %s: not a two-option variable", entry.key, address)
             continue
         variables.append(MatchedVariable(entry.key, address, info))

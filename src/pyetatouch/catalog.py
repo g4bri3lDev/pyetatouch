@@ -29,9 +29,12 @@ class Kind(StrEnum):
     SETTING = "setting"  # numeric, writable when varinfo says so
     SWITCH = "switch"  # writable, exactly two options (off, on)
     SELECT = "select"  # writable, several options
+    MODE = "mode"  # one of several mutually exclusive panel buttons (on/off options)
+    ACTION = "action"  # momentary trigger: write the "on" option (on/off options)
 
 
-NEEDS_INFO = frozenset({Kind.STATE, Kind.SETTING, Kind.SWITCH, Kind.SELECT})
+NEEDS_INFO = frozenset({Kind.STATE, Kind.SETTING, Kind.SWITCH, Kind.SELECT, Kind.MODE, Kind.ACTION})
+TWO_OPTION_KINDS = frozenset({Kind.SWITCH, Kind.MODE, Kind.ACTION})
 
 Alias = tuple[int, int, int]
 
@@ -94,13 +97,15 @@ def _e(
     return CatalogEntry(key, kind, aliases, default)
 
 
-M, T, S, N, W, L = (
+M, T, S, N, W, L, MO, AC = (
     Kind.MEASUREMENT,
     Kind.TOTAL,
     Kind.STATE,
     Kind.SETTING,
     Kind.SWITCH,
     Kind.SELECT,
+    Kind.MODE,
+    Kind.ACTION,
 )
 
 CATALOG: tuple[CatalogEntry, ...] = (
@@ -139,7 +144,7 @@ CATALOG: tuple[CatalogEntry, ...] = (
     _e("full_load_hours_since_cleaning", T, (0, 0, 15059), default=NEVER),
     _e("ignition_count", T, (0, 0, 12018), default=NEVER),
     _e("heating_run_count", T, (0, 0, 12017), default=NEVER),
-    _e("fill_pellet_container", W, (0, 0, 12071), default=NEVER),
+    _e("fill_pellet_container", AC, (0, 0, 12071), default=NEVER),
     # pellet store
     _e("discharge_state", S, (0, 0, 19417)),
     _e("pellet_stock", M, (0, 0, 12015)),
@@ -155,11 +160,11 @@ CATALOG: tuple[CatalogEntry, ...] = (
     _e("setback_reduction", N, (0, 0, 12107), default=NEVER),
     _e("heating_limit_day", N, (0, 0, 12096), default=NEVER),
     _e("heating_limit_night", N, (0, 0, 12097), default=NEVER),
-    _e("heat_button", W, (0, 0, 12125)),
-    _e("auto_button", W, (0, 0, 12126)),
-    _e("setback_button", W, (0, 0, 12230)),
-    _e("come_button", W, (0, 0, 12218), default=NEVER),
-    _e("go_button", W, (0, 0, 12231), default=NEVER),
+    _e("heat_button", MO, (0, 0, 12125)),
+    _e("auto_button", MO, (0, 0, 12126)),
+    _e("setback_button", MO, (0, 0, 12230)),
+    _e("come_button", AC, (0, 0, 12218), default=NEVER),
+    _e("go_button", AC, (0, 0, 12231), default=NEVER),
     # hot water
     _e("hot_water_state", S, (0, 0, 19406)),
     _e("hot_water_temperature", M, (0, 11129, 0), (0, 0, 12271)),

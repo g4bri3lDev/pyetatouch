@@ -80,3 +80,12 @@ def test_aliases_exist_on_reference_heater() -> None:
     ids = {key for fub in menu for key in fub.variables}
     missing = [(e.key, a) for e in CATALOG for a in e.aliases if a not in ids]
     assert missing == []
+
+
+def test_mode_and_action_kinds() -> None:
+    for key in ("heat_button", "auto_button", "setback_button"):
+        entry = get_entry(key)
+        assert entry is not None and entry.kind is Kind.MODE
+    for key in ("come_button", "go_button", "fill_pellet_container"):
+        entry = get_entry(key)
+        assert entry is not None and entry.kind is Kind.ACTION
