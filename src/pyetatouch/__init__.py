@@ -1,12 +1,20 @@
 """Async client for the ETAtouch REST web service."""
 
-from .catalog import CATALOG, CatalogEntry, ComponentType, Kind, component_type, get_entry
+from .catalog import (
+    CATALOG,
+    CatalogEntry,
+    ComponentType,
+    Kind,
+    component_type,
+    enabled_by_default,
+    entry_for_alias,
+    get_entry,
+)
 from .client import EtaClient
 from .discovery import (
     Component,
     Installation,
     MatchedVariable,
-    UnknownComponent,
     UnknownVariable,
     discover,
 )
@@ -63,7 +71,6 @@ __all__ = [
     "MatchedVariable",
     "MenuFub",
     "Transport",
-    "UnknownComponent",
     "UnknownVariable",
     "VarAddress",
     "VarInfo",
@@ -72,7 +79,9 @@ __all__ = [
     "component_type",
     "decode_value",
     "discover",
+    "enabled_by_default",
     "encode_value",
+    "entry_for_alias",
     "get_entry",
     "switch_codes",
 ]

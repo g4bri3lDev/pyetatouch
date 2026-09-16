@@ -13,14 +13,14 @@ from .client import EtaClient
 from .models import VarAddress, VarInfo
 
 _LOGGER = logging.getLogger(__name__)
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 @dataclass(frozen=True, slots=True)
 class Component:
-    """A known function block instance."""
+    """A function block instance; type is None when the fub id is unknown."""
 
-    type: ComponentType
+    type: ComponentType | None
     node: int
     fub: int
     name: str
@@ -28,15 +28,6 @@ class Component:
     @property
     def instance(self) -> tuple[int, int]:
         return (self.node, self.fub)
-
-
-@dataclass(frozen=True, slots=True)
-class UnknownComponent:
-    """A function block whose type the catalog does not know."""
-
-    node: int
-    fub: int
-    name: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,7 +41,7 @@ class MatchedVariable:
 
 @dataclass(frozen=True, slots=True)
 class UnknownVariable:
-    """A menu variable that is not in the catalog."""
+    """A menu variable whose id is not in the catalog."""
 
     address: VarAddress
     name: str
@@ -62,7 +53,6 @@ class Installation:
 
     components: tuple[Component, ...]
     variables: tuple[MatchedVariable, ...]
-    unknown_components: tuple[UnknownComponent, ...] = ()
     unknown_variables: tuple[UnknownVariable, ...] = ()
 
     def component_for(self, address: VarAddress) -> Component | None:
@@ -76,7 +66,12 @@ class Installation:
         return {
             "version": SCHEMA_VERSION,
             "components": [
-                {"type": c.type.value, "node": c.node, "fub": c.fub, "name": c.name}
+                {
+                    "type": c.type.value if c.type else None,
+                    "node": c.node,
+                    "fub": c.fub,
+                    "name": c.name,
+                }
                 for c in self.components
             ],
             "variables": [
@@ -87,9 +82,6 @@ class Installation:
                 }
                 for v in self.variables
             ],
-            "unknown_components": [
-                {"node": u.node, "fub": u.fub, "name": u.name} for u in self.unknown_components
-            ],
         }
 
     @classmethod
@@ -97,7 +89,12 @@ class Installation:
         """Restore from to_dict() output."""
         return cls(
             components=tuple(
-                Component(ComponentType(c["type"]), c["node"], c["fub"], c["name"])
+                Component(
+                    ComponentType(c["type"]) if c["type"] else None,
+                    c["node"],
+                    c["fub"],
+                    c["name"],
+                )
                 for c in data["components"]
             ),
             variables=tuple(
@@ -108,29 +105,20 @@ class Installation:
                 )
                 for v in data["variables"]
             ),
-            unknown_components=tuple(
-                UnknownComponent(u["node"], u["fub"], u["name"])
-                for u in data.get("unknown_components", [])
-            ),
         )
 
 
 async def discover(client: EtaClient, *, set_name: str = "pyetatouchdisc") -> Installation:
-    """Match the heater's menu against the catalog and keep readable variables."""
+    """Match every function block against the catalog and keep readable variables."""
     menu = await client.menu()
     components: list[Component] = []
-    unknown_components: list[UnknownComponent] = []
     unknown_variables: list[UnknownVariable] = []
     candidates: list[tuple[CatalogEntry, list[VarAddress]]] = []
 
     for fub in menu:
-        ctype = component_type(fub.fub)
-        if ctype is None:
-            unknown_components.append(UnknownComponent(fub.node, fub.fub, fub.name))
-            continue
-        components.append(Component(ctype, fub.node, fub.fub, fub.name))
+        components.append(Component(component_type(fub.fub), fub.node, fub.fub, fub.name))
         claimed: set[tuple[int, int, int]] = set()
-        for entry in CATALOG[ctype]:
+        for entry in CATALOG:
             present = [
                 VarAddress(fub.node, fub.fub, *alias)
                 for alias in entry.aliases
@@ -167,9 +155,4 @@ async def discover(client: EtaClient, *, set_name: str = "pyetatouchdisc") -> In
             continue
         variables.append(MatchedVariable(entry.key, address, info))
 
-    return Installation(
-        tuple(components),
-        tuple(variables),
-        tuple(unknown_components),
-        tuple(unknown_variables),
-    )
+    return Installation(tuple(components), tuple(variables), tuple(unknown_variables))

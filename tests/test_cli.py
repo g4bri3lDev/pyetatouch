@@ -51,7 +51,7 @@ async def test_discover(heater: FakeHeater, capsys: pytest.CaptureFixture[str]) 
         assert await async_main(["--port", str(port), "discover", host]) == 0
     out = capsys.readouterr().out
     assert "FBH [heating_circuit] 120/10102" in out
-    assert "unknown components: 1" in out
+    assert "FWM [unknown] 120/10999" in out
 
 
 async def test_error_exit_code(unused_tcp_port: int, capsys: pytest.CaptureFixture[str]) -> None:

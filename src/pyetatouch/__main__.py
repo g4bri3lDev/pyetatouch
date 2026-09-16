@@ -41,14 +41,12 @@ async def _discover(client: EtaClient) -> int:
     installation = await discover(client)
     print(f"ETAtouch API {version} at {client.host}:{client.port}")
     for component in installation.components:
-        title = component.name or component.type
-        print(f"\n{title} [{component.type}] {component.node}/{component.fub}")
+        kind = component.type or "unknown"
+        title = component.name or kind
+        print(f"\n{title} [{kind}] {component.node}/{component.fub}")
         for variable in installation.variables_for(component):
             print(f"  {variable.key:36} {variable.address}")
-    print(
-        f"\nunknown components: {len(installation.unknown_components)}, "
-        f"unknown variables: {len(installation.unknown_variables)}"
-    )
+    print(f"\nvariables not in the catalog: {len(installation.unknown_variables)}")
     return 0
 
 

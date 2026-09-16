@@ -1,69 +1,82 @@
-"""Tests for the catalog."""
+"""Tests for the global catalog."""
 
 import pytest
 
 from pyetatouch.catalog import (
     CATALOG,
+    CatalogEntry,
     ComponentType,
     Kind,
     component_type,
+    enabled_by_default,
+    entry_for_alias,
     get_entry,
 )
 from pyetatouch.parsing import parse_document, parse_menu
 from tests.helpers import private_fixture, requires_private
 
+B, HC, HW = ComponentType.BOILER, ComponentType.HEATING_CIRCUIT, ComponentType.HOT_WATER
+
 
 @pytest.mark.parametrize(
     ("fub", "expected"),
     [
-        (10021, ComponentType.BOILER),
-        (10101, ComponentType.HEATING_CIRCUIT),
-        (10102, ComponentType.HEATING_CIRCUIT),
-        (10111, ComponentType.HOT_WATER),
+        (10021, B),
+        (10391, B),
+        (10561, B),
+        (10101, HC),
+        (10102, HC),
+        (10111, HW),
         (10201, ComponentType.PELLET_STORE),
+        (10211, ComponentType.PELLET_STORE),
         (10221, ComponentType.SOLAR),
         (10241, ComponentType.SYSTEM),
         (10251, ComponentType.BUFFER),
-        (10601, ComponentType.BUFFER_FLEX),
-        (10531, None),
-        (10801, None),
-        (99999, None),
+        (10601, ComponentType.BUFFER),
+        (10531, ComponentType.FRESH_WATER),
+        (10801, ComponentType.CIRCULATION),
+        (10999, None),
     ],
 )
 def test_component_type(fub: int, expected: ComponentType | None) -> None:
     assert component_type(fub) is expected
 
 
-def test_every_type_has_a_catalog() -> None:
-    assert set(CATALOG) == set(ComponentType)
+def test_keys_and_aliases_are_unique() -> None:
+    keys = [entry.key for entry in CATALOG]
+    assert len(keys) == len(set(keys))
+    aliases = [alias for entry in CATALOG for alias in entry.aliases]
+    assert len(aliases) == len(set(aliases))
+    assert all(entry.aliases for entry in CATALOG)
 
 
-@pytest.mark.parametrize("ctype", list(ComponentType))
-def test_entries_are_consistent(ctype: ComponentType) -> None:
-    entries = CATALOG[ctype]
-    keys = [entry.key for entry in entries]
-    assert len(keys) == len(set(keys)), "duplicate keys"
-    aliases = [alias for entry in entries for alias in entry.aliases]
-    assert len(aliases) == len(set(aliases)), "alias used by two entries"
-    assert all(entry.aliases for entry in entries)
+def test_lookup() -> None:
+    power = entry_for_alias((0, 0, 12080))
+    assert power is not None and power.key == "power" and power.kind is Kind.SWITCH
+    assert entry_for_alias((0, 11109, 0)) is entry_for_alias((0, 0, 12161))
+    assert entry_for_alias((9, 9, 9)) is None
+    assert get_entry("outdoor_temperature") is entry_for_alias((0, 0, 12197))
+    assert get_entry("nope") is None
+
+
+def test_enabled_by_default() -> None:
+    def entry(key: str) -> CatalogEntry:
+        found = get_entry(key)
+        assert found is not None
+        return found
+
+    assert enabled_by_default(entry("power"), HC)
+    assert not enabled_by_default(entry("power"), ComponentType.BUFFER)
+    assert enabled_by_default(entry("outdoor_temperature"), ComponentType.SYSTEM)
+    assert not enabled_by_default(entry("outdoor_temperature"), HC)
+    assert not enabled_by_default(entry("outdoor_temperature"), None)
+    assert enabled_by_default(entry("boiler_temperature"), None)
+    assert not enabled_by_default(entry("priority"), HW)
 
 
 @requires_private
-def test_catalog_aliases_exist_on_reference_heater() -> None:
+def test_aliases_exist_on_reference_heater() -> None:
     menu = parse_menu(parse_document(private_fixture("menu.xml"), 200))
-    keys_by_type: dict[ComponentType, set[tuple[int, int, int]]] = {}
-    for fub in menu:
-        ctype = component_type(fub.fub)
-        assert ctype is not None
-        keys_by_type.setdefault(ctype, set()).update(fub.variables)
-    for ctype, keys in keys_by_type.items():
-        for entry in CATALOG[ctype]:
-            for alias in entry.aliases:
-                assert alias in keys, f"{ctype}.{entry.key}: {alias} not in menu"
-
-
-def test_get_entry() -> None:
-    entry = get_entry(ComponentType.HOT_WATER, "target_temperature")
-    assert entry is not None
-    assert entry.kind is Kind.SETTING
-    assert get_entry(ComponentType.HOT_WATER, "nope") is None
+    ids = {key for fub in menu for key in fub.variables}
+    missing = [(e.key, a) for e in CATALOG for a in e.aliases if a not in ids]
+    assert missing == []

@@ -50,11 +50,19 @@ async def test_components(client: EtaClient, heater: FakeHeater) -> None:
         ("FBH", ComponentType.HEATING_CIRCUIT, (120, 10102)),
         ("WW", ComponentType.HOT_WATER, (120, 10111)),
         ("Kessel", ComponentType.BOILER, (40, 10021)),
-    ]
-    assert [(u.node, u.fub, u.name) for u in installation.unknown_components] == [
-        (120, 10531, "FWM")
+        ("FWM", None, (120, 10999)),
     ]
     assert heater.varsets == {}, "probe variable set must be deleted"
+
+
+async def test_unknown_component_gets_catalog_variables(
+    client: EtaClient, heater: FakeHeater
+) -> None:
+    _small_heater(heater)
+    installation = await discover(client)
+    fwm = installation.component_for(VarAddress(120, 10999, 0, 0, 0))
+    assert fwm is not None and fwm.type is None
+    assert [v.key for v in installation.variables_for(fwm)] == ["outdoor_temperature"]
 
 
 async def test_restricted_alias_falls_back(client: EtaClient, heater: FakeHeater) -> None:
@@ -63,9 +71,9 @@ async def test_restricted_alias_falls_back(client: EtaClient, heater: FakeHeater
     boiler = installation.component_for(VarAddress(40, 10021, 0, 0, 0))
     assert boiler is not None
     by_key = {v.key: v for v in installation.variables_for(boiler)}
-    assert by_key["temperature"].address == VarAddress(40, 10021, 0, 0, 12161)
+    assert by_key["boiler_temperature"].address == VarAddress(40, 10021, 0, 0, 12161)
     assert by_key["flue_gas_temperature"].address == VarAddress(40, 10021, 0, 11110, 0)
-    assert set(by_key) == {"state", "temperature", "flue_gas_temperature", "power"}
+    assert set(by_key) == {"boiler_state", "boiler_temperature", "flue_gas_temperature", "power"}
 
 
 async def test_both_heating_circuits_match(client: EtaClient, heater: FakeHeater) -> None:
@@ -74,7 +82,7 @@ async def test_both_heating_circuits_match(client: EtaClient, heater: FakeHeater
     hk, fbh = (c for c in installation.components if c.type is ComponentType.HEATING_CIRCUIT)
     hk_keys = {v.key for v in installation.variables_for(hk)}
     assert hk_keys == {v.key for v in installation.variables_for(fbh)}
-    assert hk_keys == {"state", "flow_temperature", "curve_offset", "power"}
+    assert hk_keys == {"heating_circuit_state", "flow_temperature", "curve_offset", "power"}
     assert all(v.address.instance == (120, 10102) for v in installation.variables_for(fbh))
 
 
@@ -83,8 +91,8 @@ async def test_info_only_for_kinds_that_need_it(client: EtaClient, heater: FakeH
     installation = await discover(client)
     hot_water = next(c for c in installation.components if c.type is ComponentType.HOT_WATER)
     by_key = {v.key: v for v in installation.variables_for(hot_water)}
-    assert by_key["temperature"].info is None
-    target = by_key["target_temperature"].info
+    assert by_key["hot_water_temperature"].info is None
+    target = by_key["hot_water_target_temperature"].info
     assert target is not None and target.writable and target.maximum == 900.0
     power = by_key["power"].info
     assert power is not None and dict(power.options) == ON_OFF
@@ -97,6 +105,7 @@ async def test_unknown_variables_listed(client: EtaClient, heater: FakeHeater) -
     unknown = {str(u.address): u.name for u in installation.unknown_variables}
     assert unknown["120/10111/0/0/13987"] == "Ein/Aus Taste anzeigen"
     assert unknown["120/10101/0/0/12090"] == "Status"
+    assert unknown["120/10999/0/0/12345"] == "Frischwasser"
     assert "40/10021/0/11109/0" not in unknown
 
 
@@ -114,10 +123,12 @@ async def test_switch_without_two_options_is_skipped(client: EtaClient, heater: 
 async def test_round_trip(client: EtaClient, heater: FakeHeater) -> None:
     _small_heater(heater)
     installation = await discover(client)
-    restored = Installation.from_dict(installation.to_dict())
+    data = installation.to_dict()
+    assert data["version"] == 2
+    assert data["components"][-1]["type"] is None
+    restored = Installation.from_dict(data)
     assert restored.components == installation.components
     assert restored.variables == installation.variables
-    assert restored.unknown_components == installation.unknown_components
     assert restored.unknown_variables == ()
 
 
@@ -137,7 +148,7 @@ async def test_reference_heater(client: EtaClient, heater: FakeHeater) -> None:
         "WW",
         "Kessel",
     ]
-    assert installation.unknown_components == ()
+    assert all(c.type is not None for c in installation.components)
     hk, fbh = (c for c in installation.components if c.type is ComponentType.HEATING_CIRCUIT)
     assert {v.key for v in installation.variables_for(hk)} == {
         v.key for v in installation.variables_for(fbh)

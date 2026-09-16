@@ -36,8 +36,9 @@
    </object>
    <object uri="/40/10021/0/0/12080" name="Ein/Aus Taste"/>
   </fub>
-  <fub uri="/120/10531" name="FWM">
-   <object uri="/120/10531/0/0/12345" name="Frischwasser"/>
+  <fub uri="/120/10999" name="FWM">
+   <object uri="/120/10999/0/0/12345" name="Frischwasser"/>
+   <object uri="/120/10999/0/0/12197" name="Außentemperatur"/>
   </fub>
  </menu>
 </eta>
