@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eta version="1.0" xmlns="http://www.eta.co.at/rest/v1">
+ <varInfo uri="/user/varinfo/40/10021/0/0/12011">
+  <variable advTextOffset="0" unit="kg" uri="40/10021/0/0/12011" isWritable="1" scaleFactor="10" name="Inhalt Pelletsbehälter" fullName="Zählerstände > Inhalt Pelletsbehälter" decPlaces="0">
+   <type>DEFAULT</type>
+   <validValues>
+    <min unit="kg" strValue="0">0</min>
+    <def unit="kg" strValue="0">0</def>
+    <max unit="kg" strValue="0">0</max>
+   </validValues>
+  </variable>
+ </varInfo>
+</eta>

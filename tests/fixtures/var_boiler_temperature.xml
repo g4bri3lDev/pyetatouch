@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eta version="1.0" xmlns="http://www.eta.co.at/rest/v1">
+ <value advTextOffset="0" unit="°C" uri="/user/var/40/10021/0/11109/0" strValue="60" scaleFactor="10" decPlaces="0">600</value>
+</eta>

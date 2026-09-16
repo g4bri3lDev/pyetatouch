@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eta version="1.0" xmlns="http://www.eta.co.at/rest/v1">
+ <error uri="/user/var/40/10021/0/11109/0">Read-only parameters must not be written.</error>
+</eta>

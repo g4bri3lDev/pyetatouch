@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eta version="1.0" xmlns="http://www.eta.co.at/rest/v1">
+ <varInfo uri="/user/varinfo/120/10111/0/0/12770">
+  <variable advTextOffset="1971" unit="" uri="120/10111/0/0/12770" isWritable="1" scaleFactor="1" name="Priorität" fullName="Warmwasserspeicher > Priorität" decPlaces="0">
+   <type>TEXT</type>
+   <validValues>
+    <value strValue="Niedrig">1971</value>
+    <value strValue="Mittel">1972</value>
+    <value strValue="Hoch">1973</value>
+   </validValues>
+  </variable>
+ </varInfo>
+</eta>

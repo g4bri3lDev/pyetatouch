@@ -1,2 +1,11 @@
 tests/fixtures/private/
 .idea/
+__pycache__/
+*.py[cod]
+.venv/
+dist/
+.coverage
+htmlcov/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/

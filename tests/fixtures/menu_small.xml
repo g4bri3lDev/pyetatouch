@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eta version="1.0" xmlns="http://www.eta.co.at/rest/v1">
+ <menu uri="/user/menu">
+  <fub uri="/120/10101" name="HK">
+   <object uri="/120/10101/0/0/19404" name="Heizkreis">
+    <object uri="/120/10101/0/11060/0" name="Vorlauf"/>
+    <object uri="/120/10101/0/0/12240" name="Schieber Position"/>
+    <object uri="/120/10101/0/0/12090" name="Status"/>
+   </object>
+   <object uri="/120/10101/0/0/12080" name="Ein/Aus Taste"/>
+  </fub>
+  <fub uri="/120/10102" name="FBH">
+   <object uri="/120/10102/0/0/19404" name="Heizkreis">
+    <object uri="/120/10102/0/11060/0" name="Vorlauf"/>
+    <object uri="/120/10102/0/0/12240" name="Schieber Position"/>
+    <object uri="/120/10102/0/0/12090" name="Status"/>
+   </object>
+   <object uri="/120/10102/0/0/12080" name="Ein/Aus Taste"/>
+  </fub>
+  <fub uri="/120/10111" name="WW">
+   <object uri="/120/10111/0/0/19406" name="Warmwasserspeicher">
+    <object uri="/120/10111/0/11129/0" name="Warmwasserspeicher"/>
+    <object uri="/120/10111/0/0/12132" name="Warmwasserspeicher Soll"/>
+   </object>
+   <object uri="/120/10111/0/0/12080" name="Ein/Aus Taste"/>
+   <object uri="/120/10111/0/0/13987" name="Ein/Aus Taste anzeigen"/>
+  </fub>
+  <fub uri="/40/10021" name="Kessel">
+   <object uri="/40/10021/0/0/10990" name="Eingänge">
+    <object uri="/40/10021/0/11109/0" name="Kessel"/>
+    <object uri="/40/10021/0/11110/0" name="Abgas"/>
+   </object>
+   <object uri="/40/10021/0/0/19402" name="Kessel">
+    <object uri="/40/10021/0/0/12161" name="Kessel"/>
+    <object uri="/40/10021/0/11109/0" name="Kessel"/>
+   </object>
+   <object uri="/40/10021/0/0/12080" name="Ein/Aus Taste"/>
+  </fub>
+  <fub uri="/120/10531" name="FWM">
+   <object uri="/120/10531/0/0/12345" name="Frischwasser"/>
+  </fub>
+ </menu>
+</eta>

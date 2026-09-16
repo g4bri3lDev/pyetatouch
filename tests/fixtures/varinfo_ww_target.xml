@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eta version="1.0" xmlns="http://www.eta.co.at/rest/v1">
+ <varInfo uri="/user/varinfo/120/10111/0/0/12132">
+  <variable advTextOffset="0" unit="°C" uri="120/10111/0/0/12132" isWritable="1" scaleFactor="10" name="Warmwasserspeicher Soll" fullName="Warmwasserspeicher > Warmwasserspeicher Soll" decPlaces="0">
+   <type>DEFAULT</type>
+   <validValues>
+    <min unit="°C" strValue="0">0</min>
+    <def unit="°C" strValue="0">0</def>
+    <max unit="°C" strValue="90">900</max>
+   </validValues>
+  </variable>
+ </varInfo>
+</eta>

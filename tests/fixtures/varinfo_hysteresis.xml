@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eta version="1.0" xmlns="http://www.eta.co.at/rest/v1">
+ <varInfo uri="/user/varinfo/120/10111/0/0/12133">
+  <variable advTextOffset="0" unit="°C" uri="120/10111/0/0/12133" isWritable="1" scaleFactor="10" name="Einschaltdifferenz" fullName="Warmwasserspeicher > Einschaltdifferenz" decPlaces="0">
+   <type>DEFAULT</type>
+   <validValues>
+    <min unit="°C" strValue="0">0</min>
+    <def unit="°C" strValue="15">150</def>
+    <max unit="°C" strValue="30">300</max>
+   </validValues>
+  </variable>
+ </varInfo>
+</eta>

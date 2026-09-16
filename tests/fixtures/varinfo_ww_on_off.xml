@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eta version="1.0" xmlns="http://www.eta.co.at/rest/v1">
+ <varInfo uri="/user/varinfo/120/10111/0/0/12080">
+  <variable advTextOffset="1802" unit="" uri="120/10111/0/0/12080" isWritable="1" scaleFactor="1" name="Ein/Aus Taste" fullName="Sonstiges > Ein/Aus Taste" decPlaces="0">
+   <type>TEXT</type>
+   <validValues>
+    <value strValue="Aus">1802</value>
+    <value strValue="Ein">1803</value>
+   </validValues>
+  </variable>
+ </varInfo>
+</eta>

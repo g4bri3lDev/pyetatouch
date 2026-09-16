@@ -1,0 +1,60 @@
+[project]
+name = "pyetatouch"
+version = "0.1.0"
+description = "Async client for the ETAtouch REST web service of ETA heating systems"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+requires-python = ">=3.13"
+authors = [{ name = "g4bri3lDev", email = "admin@g4bri3l.de" }]
+classifiers = [
+    "Framework :: AsyncIO",
+    "Programming Language :: Python :: 3",
+    "Topic :: Home Automation",
+    "Typing :: Typed",
+]
+dependencies = ["aiohttp>=3.11"]
+
+[project.urls]
+Homepage = "https://github.com/g4bri3lDev/pyetatouch"
+Repository = "https://github.com/g4bri3lDev/pyetatouch"
+Issues = "https://github.com/g4bri3lDev/pyetatouch/issues"
+
+[project.scripts]
+pyetatouch = "pyetatouch.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "aioresponses>=0.7.8",
+    "mypy>=1.15",
+    "pytest>=8.3",
+    "pytest-asyncio>=0.25",
+    "pytest-cov>=6.0",
+    "ruff>=0.9",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+
+[tool.mypy]
+strict = true
+files = ["src", "tests"]
+
+[[tool.mypy.overrides]]
+module = ["aioresponses.*"]
+ignore_missing_imports = true
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+extend-exclude = ["docs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF", "ASYNC"]
+ignore = ["E501"]

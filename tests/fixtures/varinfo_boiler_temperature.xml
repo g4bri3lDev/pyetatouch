@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eta version="1.0" xmlns="http://www.eta.co.at/rest/v1">
+ <varInfo uri="/user/varinfo/40/10021/0/11109/0">
+  <variable advTextOffset="0" unit="°C" uri="40/10021/0/11109/0" isWritable="0" scaleFactor="10" name="Kessel" fullName="Eingänge > Kessel" decPlaces="0">
+   <type>DEFAULT</type>
+  </variable>
+ </varInfo>
+</eta>

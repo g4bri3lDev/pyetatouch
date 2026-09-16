@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eta version="1.0" xmlns="http://www.eta.co.at/rest/v1">
+ <error uri="/user/var/120/10111/0/0/12133">Value is out of range.</error>
+</eta>
