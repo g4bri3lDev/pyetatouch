@@ -1,6 +1,6 @@
 [project]
 name = "pyetatouch"
-version = "0.0.0"
+version = "0.1.0"
 description = "Async client for the ETAtouch REST web service of ETA heating systems"
 readme = "README.md"
 license = "Apache-2.0"

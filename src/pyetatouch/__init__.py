@@ -47,7 +47,7 @@ from .states import STATE_KEYS, code_for_state, state_key, state_keys
 from .transport import Transport
 from .varset import VarSet
 
-__version__ = "0.0.0"
+__version__ = "0.1.0"
 
 __all__ = [
     "CATALOG",
