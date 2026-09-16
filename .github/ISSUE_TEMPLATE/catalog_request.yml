@@ -13,7 +13,7 @@ body:
         ```
 
         The report lists variable ids, ETA names and types. It contains no values,
-        no network addresses and no panel names. It takes a few minutes.
+        no network addresses and no panel names. It takes several minutes.
   - type: input
     id: model
     attributes:
