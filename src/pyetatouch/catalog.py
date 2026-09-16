@@ -31,9 +31,12 @@ class Kind(StrEnum):
     SELECT = "select"  # writable, several options
     MODE = "mode"  # one of several mutually exclusive panel buttons (on/off options)
     ACTION = "action"  # momentary trigger: write the "on" option (on/off options)
+    TIME = "time"  # time of day, raw value = minutes since midnight
 
 
-NEEDS_INFO = frozenset({Kind.STATE, Kind.SETTING, Kind.SWITCH, Kind.SELECT, Kind.MODE, Kind.ACTION})
+NEEDS_INFO = frozenset(
+    {Kind.STATE, Kind.SETTING, Kind.SWITCH, Kind.SELECT, Kind.MODE, Kind.ACTION, Kind.TIME}
+)
 TWO_OPTION_KINDS = frozenset({Kind.SWITCH, Kind.MODE, Kind.ACTION})
 
 Alias = tuple[int, int, int]
@@ -97,7 +100,7 @@ def _e(
     return CatalogEntry(key, kind, aliases, default)
 
 
-M, T, S, N, W, L, MO, AC = (
+M, T, S, N, W, L, MO, AC, TI = (
     Kind.MEASUREMENT,
     Kind.TOTAL,
     Kind.STATE,
@@ -106,6 +109,7 @@ M, T, S, N, W, L, MO, AC = (
     Kind.SELECT,
     Kind.MODE,
     Kind.ACTION,
+    Kind.TIME,
 )
 
 CATALOG: tuple[CatalogEntry, ...] = (
@@ -145,6 +149,9 @@ CATALOG: tuple[CatalogEntry, ...] = (
     _e("ignition_count", T, (0, 0, 12018), default=NEVER),
     _e("heating_run_count", T, (0, 0, 12017), default=NEVER),
     _e("fill_pellet_container", AC, (0, 0, 12071), default=NEVER),
+    _e("pellet_suction_time", TI, (0, 0, 12152)),
+    _e("quiet_time_start", TI, (0, 0, 12248), default=NEVER),
+    _e("quiet_time_duration", N, (0, 0, 12249), default=NEVER),
     # pellet store
     _e("discharge_state", S, (0, 0, 19417)),
     _e("pellet_stock", M, (0, 0, 12015)),
@@ -190,6 +197,7 @@ CATALOG: tuple[CatalogEntry, ...] = (
     _e("storage_1_bottom_temperature", M, (0, 0, 12781), default=NEVER),
     # system
     _e("fault_status", S, (0, 0, 14262), default=NEVER),
+    _e("anti_seize_time", TI, (0, 0, 14244), default=NEVER),
 )
 
 _BY_ALIAS: dict[Alias, CatalogEntry] = {

@@ -89,3 +89,9 @@ def test_mode_and_action_kinds() -> None:
     for key in ("come_button", "go_button", "fill_pellet_container"):
         entry = get_entry(key)
         assert entry is not None and entry.kind is Kind.ACTION
+
+
+def test_time_kind() -> None:
+    for key in ("pellet_suction_time", "quiet_time_start", "anti_seize_time"):
+        entry = get_entry(key)
+        assert entry is not None and entry.kind is Kind.TIME
