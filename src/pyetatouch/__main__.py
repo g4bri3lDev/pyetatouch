@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import json
 import sys
+from pathlib import Path
 
 import aiohttp
 
 from .client import DEFAULT_PORT, EtaClient
 from .discovery import discover
+from .dump import describe
 from .exceptions import EtaError
 from .models import VarAddress, decode_value
 
@@ -33,6 +36,11 @@ def _parser() -> argparse.ArgumentParser:
     write.add_argument("address")
     write.add_argument("value", help="number, option label or option code")
     write.add_argument("--yes", action="store_true", help="actually send the write")
+    dump = commands.add_parser("dump", help="write an anonymised structure report (no values)")
+    dump.add_argument("host")
+    dump.add_argument("-o", "--output", type=Path, help="file to write (default: stdout)")
+    dump.add_argument("--no-info", action="store_true", help="skip varinfo (fast, less detail)")
+    dump.add_argument("--keep-names", action="store_true", help="keep panel names")
     return parser
 
 
@@ -47,6 +55,22 @@ async def _discover(client: EtaClient) -> int:
         for variable in installation.variables_for(component):
             print(f"  {variable.key:36} {variable.address}")
     print(f"\nvariables not in the catalog: {len(installation.unknown_variables)}")
+    return 0
+
+
+async def _dump(client: EtaClient, args: argparse.Namespace) -> int:
+    def progress(done: int, total: int) -> None:
+        print(f"\rvarinfo {done}/{total}", end="" if done < total else "\n", file=sys.stderr)
+
+    report = await describe(
+        client, with_info=not args.no_info, keep_names=args.keep_names, progress=progress
+    )
+    text = json.dumps(report, ensure_ascii=False, indent=2)
+    if args.output is None:
+        print(text)
+    else:
+        args.output.write_text(text + "\n", encoding="utf-8")
+        print(f"wrote {args.output}", file=sys.stderr)
     return 0
 
 
@@ -85,6 +109,8 @@ async def async_main(argv: list[str] | None = None) -> int:
             client = EtaClient(session, args.host, args.port)
             if args.command == "discover":
                 return await _discover(client)
+            if args.command == "dump":
+                return await _dump(client, args)
             address = VarAddress.parse(args.address)
             if args.command == "read":
                 return await _read(client, address)

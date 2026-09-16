@@ -18,6 +18,7 @@ from .discovery import (
     UnknownVariable,
     discover,
 )
+from .dump import describe
 from .exceptions import (
     EtaConflictError,
     EtaConnectionError,
@@ -78,6 +79,7 @@ __all__ = [
     "VarValue",
     "component_type",
     "decode_value",
+    "describe",
     "discover",
     "enabled_by_default",
     "encode_value",

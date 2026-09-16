@@ -1,5 +1,8 @@
 """Tests for the command-line interface."""
 
+import json
+from pathlib import Path
+
 import pytest
 
 from pyetatouch.__main__ import async_main
@@ -57,3 +60,12 @@ async def test_discover(heater: FakeHeater, capsys: pytest.CaptureFixture[str]) 
 async def test_error_exit_code(unused_tcp_port: int, capsys: pytest.CaptureFixture[str]) -> None:
     assert await async_main(["--port", str(unused_tcp_port), "discover", "127.0.0.1"]) == 1
     assert "error:" in capsys.readouterr().err
+
+
+async def test_dump_to_file(heater: FakeHeater, tmp_path: Path) -> None:
+    target = tmp_path / "dump.json"
+    async with serve(heater) as (host, port):
+        args = ["--port", str(port), "dump", host, "--no-info", "-o", str(target)]
+        assert await async_main(args) == 0
+    report = json.loads(target.read_text(encoding="utf-8"))
+    assert len(report["components"]) == 5

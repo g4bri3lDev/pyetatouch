@@ -1,0 +1,38 @@
+name: Catalog request
+description: Ask for values of your heater to be supported
+labels: [catalog]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Create a structure report of your heater:
+
+        ```
+        pip install pyetatouch
+        pyetatouch dump <heater-ip> -o eta-dump.json
+        ```
+
+        The report lists variable ids, ETA names and types. It contains no values,
+        no network addresses and no panel names. It takes a few minutes.
+  - type: input
+    id: model
+    attributes:
+      label: Heater model
+      placeholder: e.g. ETA PC 25, SH 30, eHACK 50
+    validations:
+      required: true
+  - type: textarea
+    id: wanted
+    attributes:
+      label: Which values are missing?
+      description: Name and menu path as shown on the panel.
+      placeholder: Kessel › Abgas
+    validations:
+      required: true
+  - type: textarea
+    id: dump
+    attributes:
+      label: Structure report
+      description: Drag and drop eta-dump.json here.
+    validations:
+      required: true
