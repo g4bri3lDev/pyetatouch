@@ -153,6 +153,8 @@ async def test_reference_heater(client: EtaClient, heater: FakeHeater) -> None:
     assert {v.key for v in installation.variables_for(hk)} == {
         v.key for v in installation.variables_for(fbh)
     }
+    outdoor = [v for v in installation.variables if v.key == "outdoor_temperature"]
+    assert [v.address.fub for v in outdoor] == [10241]
 
 
 async def test_not_connected_values_are_dropped(client: EtaClient, heater: FakeHeater) -> None:
@@ -171,3 +173,41 @@ async def test_not_connected_values_are_dropped(client: EtaClient, heater: FakeH
     hot_water = installation.component_for(VarAddress(120, 10111, 0, 0, 0))
     assert hot_water is not None
     assert "power" in {v.key for v in installation.variables_for(hot_water)}  # text value
+
+
+TWO_OUTDOOR_MENU = """<?xml version="1.0" encoding="utf-8"?>
+<eta version="1.0" xmlns="http://www.eta.co.at/rest/v1">
+ <menu uri="/user/menu">
+  <fub uri="/120/10101" name="HK">
+   <object uri="/120/10101/0/0/12197" name="Außentemperatur"/>
+  </fub>
+  <fub uri="/120/10241" name="Sys">
+   <object uri="/120/10241/0/0/12197" name="Außentemperatur"/>
+  </fub>
+  <fub uri="/120/10999" name="FWM">
+   <object uri="/120/10999/0/0/12197" name="Außentemperatur"/>
+  </fub>
+ </menu>
+</eta>
+"""
+
+
+async def test_installation_wide_value_prefers_system(
+    client: EtaClient, heater: FakeHeater
+) -> None:
+    heater.menu = TWO_OUTDOOR_MENU
+    installation = await discover(client)
+    outdoor = [v for v in installation.variables if v.key == "outdoor_temperature"]
+    assert [v.address for v in outdoor] == [VarAddress(120, 10241, 0, 0, 12197)]
+
+
+async def test_installation_wide_value_without_system(
+    client: EtaClient, heater: FakeHeater
+) -> None:
+    heater.menu = TWO_OUTDOOR_MENU.replace(
+        '  <fub uri="/120/10241" name="Sys">\n   <object uri="/120/10241/0/0/12197" name="Außentemperatur"/>\n  </fub>\n',
+        "",
+    )
+    installation = await discover(client)
+    outdoor = [v for v in installation.variables if v.key == "outdoor_temperature"]
+    assert [v.address for v in outdoor] == [VarAddress(120, 10101, 0, 0, 12197)]

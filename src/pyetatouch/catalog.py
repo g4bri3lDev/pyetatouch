@@ -48,12 +48,15 @@ class CatalogEntry:
 
     default_types: None = enabled by default wherever it occurs; otherwise only
     on these component types (an empty set means never enabled by default).
+    single: the value is installation-wide (e.g. the outdoor sensor, repeated in the
+    menu of every function block that uses it); discovery keeps only one occurrence.
     """
 
     key: str
     kind: Kind
     aliases: tuple[Alias, ...]
     default_types: frozenset[ComponentType] | None = None
+    single: bool = False
 
 
 B = ComponentType.BOILER
@@ -96,8 +99,9 @@ def _e(
     kind: Kind,
     *aliases: Alias,
     default: frozenset[ComponentType] | None = None,
+    single: bool = False,
 ) -> CatalogEntry:
-    return CatalogEntry(key, kind, aliases, default)
+    return CatalogEntry(key, kind, aliases, default, single)
 
 
 M, T, S, N, W, L, MO, AC, TI = (
@@ -115,7 +119,14 @@ M, T, S, N, W, L, MO, AC, TI = (
 CATALOG: tuple[CatalogEntry, ...] = (
     # shared by several component types
     _e("power", W, (0, 0, 12080), default=frozenset({B, HC, HW})),
-    _e("outdoor_temperature", M, (0, 0, 12197), (0, 11127, 0), default=frozenset({SY})),
+    _e(
+        "outdoor_temperature",
+        M,
+        (0, 0, 12197),
+        (0, 11127, 0),
+        default=frozenset({SY}),
+        single=True,
+    ),
     _e("flow_temperature", M, (0, 11060, 0), (0, 0, 12241), default=frozenset({HC})),
     _e("return_temperature", M, (0, 0, 12220), default=frozenset({HC})),
     _e("hot_water_charge_now", W, (0, 0, 12134), default=frozenset({HW})),

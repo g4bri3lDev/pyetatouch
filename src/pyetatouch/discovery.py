@@ -125,6 +125,39 @@ class Installation:
         )
 
 
+def _keep_one_per_installation(
+    chosen: list[tuple[CatalogEntry, VarAddress]], components: list[Component]
+) -> list[tuple[CatalogEntry, VarAddress]]:
+    """Keep a single occurrence of installation-wide entries.
+
+    Preference: a component whose type enables the entry by default (e.g. the
+    system block for the outdoor temperature), otherwise the first in menu order.
+    """
+    types = {component.instance: component.type for component in components}
+    keep: dict[str, VarAddress] = {}
+    for entry, address in chosen:
+        if not entry.single:
+            continue
+        current = keep.get(entry.key)
+        if current is None or (
+            _is_preferred(entry, address, types) and not _is_preferred(entry, current, types)
+        ):
+            keep[entry.key] = address
+    return [
+        (entry, address)
+        for entry, address in chosen
+        if not entry.single or keep[entry.key] == address
+    ]
+
+
+def _is_preferred(
+    entry: CatalogEntry,
+    address: VarAddress,
+    types: dict[tuple[int, int], ComponentType | None],
+) -> bool:
+    return entry.default_types is not None and types[address.instance] in entry.default_types
+
+
 async def discover(client: EtaClient, *, set_name: str = "pyetatouchdisc") -> Installation:
     """Match every function block against the catalog and keep readable variables."""
     menu = await client.menu()
@@ -160,6 +193,7 @@ async def discover(client: EtaClient, *, set_name: str = "pyetatouchdisc") -> In
         address = next((a for a in addresses if a in usable), None)
         if address is not None:
             chosen.append((entry, address))
+    chosen = _keep_one_per_installation(chosen, components)
 
     async def _info(entry: CatalogEntry, address: VarAddress) -> VarInfo | None:
         return await client.var_info(address) if entry.kind in NEEDS_INFO else None

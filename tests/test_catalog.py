@@ -95,3 +95,10 @@ def test_time_kind() -> None:
     for key in ("pellet_suction_time", "quiet_time_start", "anti_seize_time"):
         entry = get_entry(key)
         assert entry is not None and entry.kind is Kind.TIME
+
+
+def test_installation_wide_entries() -> None:
+    outdoor = get_entry("outdoor_temperature")
+    assert outdoor is not None and outdoor.single
+    power = get_entry("power")
+    assert power is not None and not power.single
