@@ -43,6 +43,7 @@ from .models import (
     encode_value,
     switch_codes,
 )
+from .states import STATE_KEYS, code_for_state, state_key, state_keys
 from .transport import Transport
 from .varset import VarSet
 
@@ -50,6 +51,7 @@ __version__ = "0.0.0"
 
 __all__ = [
     "CATALOG",
+    "STATE_KEYS",
     "CatalogEntry",
     "Component",
     "ComponentType",
@@ -77,6 +79,7 @@ __all__ = [
     "VarInfo",
     "VarSet",
     "VarValue",
+    "code_for_state",
     "component_type",
     "decode_value",
     "describe",
@@ -85,5 +88,7 @@ __all__ = [
     "encode_value",
     "entry_for_alias",
     "get_entry",
+    "state_key",
+    "state_keys",
     "switch_codes",
 ]
