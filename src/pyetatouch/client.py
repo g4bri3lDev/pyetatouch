@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import errno
 import xml.etree.ElementTree as ET
+from collections.abc import Iterable
 
 import aiohttp
 
@@ -24,6 +25,7 @@ from .parsing import (
     parse_varinfo,
     parse_varset,
 )
+from .varset import VarSet
 
 DEFAULT_PORT = 8080
 MIN_API_VERSION = (1, 2)
@@ -134,3 +136,7 @@ class EtaClient:
     async def read_varset(self, name: str) -> dict[VarAddress, VarValue]:
         """Read all variables of a variable set."""
         return parse_varset(await self._request("GET", f"/user/vars/{name}"))
+
+    def varset(self, name: str, addresses: Iterable[VarAddress]) -> VarSet:
+        """Return a VarSet bound to this client (not yet created on the heater)."""
+        return VarSet(self, name, addresses)

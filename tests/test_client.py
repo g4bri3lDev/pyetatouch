@@ -141,3 +141,8 @@ async def test_varset_errors(client: EtaClient) -> None:
         await client.read_varset("missing")
     with pytest.raises(EtaNotFoundError):
         await client.delete_varset("missing")
+
+
+async def test_client_builds_varset(client: EtaClient) -> None:
+    varset = client.varset("ha1", [BOILER_TEMP])
+    assert varset.name == "ha1"
